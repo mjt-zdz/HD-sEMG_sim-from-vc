@@ -1,25 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon May 20 10:18:11 2024
+Created on Mon May 27 11:02:51 2024
 
 @author: root
 """
+
 import numpy as np
-import fug, emg
+import fug
+import HD_sEMG
 import os
 import scipy.io
 
-# add_filter = wi8[4], bplc = wi8[2], bphc = wi8[3])
-
-# ui9,ws9 = util.wi9(muscle_emg)
-# out9 = wi.interactive_output(muscle_emg.analysis, ws9)
-# display(ui9, out9)
 
 if __name__=="__main__":
     # 定义参数
     config = {
-        ### 初始化参数
         # MU数量
         't1': 102, # 1~400 
         't2a': 16, # 1~100
@@ -47,7 +43,7 @@ if __name__=="__main__":
         'ISI_limit': 15, # 根据肌肉类型进行设置 5~30 ms
                 
         ### 兴奋驱动曲线参数
-        'mode': 'Trapezoidal', # 兴奋驱动模式，可选Trapezoidal Sinusoidal 
+        'mode': 'Sinusoidal', # 兴奋驱动模式，可选Trapezoidal Sinusoidal 
         'intensity': 30, # 兴奋驱动强度 0~100 %
         # 梯形
         't00': 500, # 兴奋驱动开始时间
@@ -70,6 +66,14 @@ if __name__=="__main__":
         'skin': 0.3, # 皮肤层厚度 0~3 mm
         'theta': 0.9, # opening弧度 0.05~np.pi/2
         'prop': 0.4, # 内外径或短轴长轴比例 0.1~0.8
+        'length': 300, # 肌肉长度 200~400 mm
+        'nmj_pos': 150, # 神经肌肉接点为位置（z坐标） mm
+        'iz_width': 10, # 神经支配区的宽度 5~20 mm
+        # 电极阵列
+        'elect_z': 14, # 阵列中沿肌纤维方向的电极数量
+        'elect_x': 9, # 阵列中横跨肌纤维的电极数量
+        'elect_d': 4, # 电极间距离 mm
+        'elect_loc': 130, # 电极位置 < 肌肉长度 mm
         # 运动神经元及其支配的肌纤维参数
         'first': 21, # 最小运动神经元支配的肌纤维数量
         'ratio': 84, # 最小和最大运动神经元之间的神经支配（肌纤维数量）比例 10~200
@@ -82,7 +86,11 @@ if __name__=="__main__":
         'v2': 130, # 最后一个招募的运动单元动作电位振幅因子 2~200 mV
         'd1': 3, # 第一个招募的运动单元动作电位持续时间因子 0.1~10 ms
         'd2': 1, # 最后一个招募的运动单元动作电位持续时间因子 0.1~10 ms
-         'add_hr': '2st order', # HR函数的阶数
+         # 'add_hr': '2st order', # HR函数的阶数
+         # 'cv_mean': 4.0, # 运动单元传导速度均值 1~10 m/s（慢肌）10~120 m/s（快肌） 
+         # 'cv_std': 0.35, # 运动单元标准差 m/s
+         # 'rc': 0.02, # 径向电导率 0.02~0.05 S/m
+         # 'arc_ratio': 10, # 轴向和径向电导率的比值 4~25
          # 体积导体衰减常数
          'ampk': 5, # 振幅衰减常数 1~20 mm
          'durak': 0.1, # 持续时间衰减常数 0.1~10 mm^(-1)
@@ -90,6 +98,7 @@ if __name__=="__main__":
         'add_noise': False, # 是否添加噪声
         'noise_level':0, # 噪声水平
         'add_filter': False, # 是否使用滤波器
+        'order': 4, # 滤波器阶数
         'lowcut': 0, # 低端截止频率
         'highcut': 0, # 高端截止频率
         'order': 4, # 滤波器阶数
@@ -102,7 +111,7 @@ if __name__=="__main__":
     config['dt'] = dt
     config['t'] = t
     config['t_size'] = len(t)
-    config['save'] = '/media/root/data/mjt/doctoral_project/neuromuscular_notebook-master/results'
+    config['save'] = '/media/root/data/mjt/doctoral_project/neuromuscular_notebook-master/results_3d_Sinusoidal'
     if not os.path.exists(config['save']):
         os.makedirs(config['save'])
             
@@ -119,29 +128,29 @@ if __name__=="__main__":
     # view_neural_command(self, CoV, synch_level, sigma)
     mn_pool.view_neural_command(config['CoV'], config['synch_level'], config['sigma'])
     
-    conductor = emg.Emg_mod(mn_pool) # 定义体积导体实例
+    conductor = HD_sEMG.Emg_mod(mn_pool) # 定义体积导体实例
     
-    # view_morpho(self, CSA, prop, theta, sk, fa, morpho, save)
-    conductor.view_morpho(config['csa'], config['prop'], config['theta'], config['skin'], config['fat'], config['morpho'], config['save'])
+    # view_morpho(self, csa, fat, skin, theta, prop, length, morpho, elect_z, elect_x, elect_d, elect_loc, save)
+    conductor.view_morpho(config['csa'], config['fat'], config['skin'], config['theta'], config['prop'], config['length'],
+                          config['morpho'], config['elect_z'], config['elect_x'], 
+                          config['elect_d'], config['elect_loc'], config['save'])
 
     # view_distribution(self, ratio, t1m, t1dp, t2m, t2dp)
     conductor.view_distribution(config['ratio'], config['t1m'], config['t1dp'], config['t2m'], config['t2dp'])
 
-    # view_muap(self, v1, v2, d1, d2, add_hr)
-    conductor.view_muap(config['v1'], config['v2'], config['d1'], config['d2'], config['add_hr'])
-    
-    # view_attenuation(self, ampk, durak)
-    conductor.view_attenuation(config['ampk'], config['durak'])
-    
-    # view_semg(self,add_noise, noise_level, add_filter, bplc, bphc)
-    conductor.view_semg(config['add_noise'], config['noise_level'], config['add_filter'], config['lowcut'], config['highcut'])
+    # view_muap(self, v1, v2, d1, d2)
+    conductor.view_muap(config['v1'], config['v2'], config['d1'], config['d2'])
+        
+    # view_semg(self, nmj_pos, iz_width, ampk, durak, add_noise, noise_level, add_filter, order, bplc, bphc)
+    conductor.view_semg(config['nmj_pos'], config['iz_width'], config['ampk'], config['durak'], config['add_noise'], config['noise_level'], 
+                        config['add_filter'], config['order'], config['lowcut'], config['highcut'])
     
     spike_trains = mn_pool.neural_input
     t_array = mn_pool.t
     sEMG = conductor.emg
     muaps = conductor.mu_emg
     
-    save_data = {'spike_trains': spike_trains, 't': t_array, 'sEMG': sEMG, 'muaps': muaps}
+    save_data = {'spike_trains': spike_trains, 't': t_array, 'sEMG': sEMG, 'muaps': muaps, 'fs': config['sampling']}
     
     scipy.io.savemat('sEMG_sim.mat', save_data)
     

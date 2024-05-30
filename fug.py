@@ -134,12 +134,11 @@ class Phemo():
         plt.plot(100*e/self.Emax, fr[self.n - 1], c = '#C44E52', ls = "-.", label = "MN IIb")  
         plt.xlabel('Excitatory drive [%]')
         plt.ylim(self.mfr)  
-        plt.xlim(0,100)
+        plt.xlim(0, 100)
         plt.ylabel('Firing Rate [imp/s]')
         plt.legend(loc=2)
         plt.tight_layout()
         plt.savefig(os.path.join(self.save,'firing-rate_excitatory-drive.tif'), dpi=600)
-        ### 加保存绘图的代码
 
         
     def view_organization(self, rr, mfr, firstPFR, PFRD, RRC, t1, t2a, t2b, gain_factor, gain_CTE, save):
@@ -167,17 +166,17 @@ class Phemo():
         
 
     def get_mu_pool_org(self,rr, mfr, firstPFR, PFRD, RRC, t1, t2a, t2b, gain_factor,gain_CTE):
-        self.t1          = t1
-        self.t2a         = t2a
-        self.t2b         = t2b
-        self.n           = t1 + t2a + t2b
-        self.rr          = rr
-        self.pfrd        = PFRD
-        self.mfr         = mfr
-        self.firstPFR    = firstPFR
-        self.gain_cte    = gain_CTE
+        self.t1 = t1
+        self.t2a = t2a
+        self.t2b = t2b
+        self.n = t1 + t2a + t2b
+        self.rr = rr
+        self.pfrd = PFRD
+        self.mfr = mfr
+        self.firstPFR = firstPFR
+        self.gain_cte = gain_CTE
         self.gain_factor = gain_factor
-        self.rrc         = RRC/100
+        self.rrc = RRC/100
         self.recruitThreshold()
         self.peakFireRate()
         self.recruitmentRangeCondition()
